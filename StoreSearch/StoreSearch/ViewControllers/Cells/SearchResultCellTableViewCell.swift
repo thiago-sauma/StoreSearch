@@ -22,7 +22,7 @@ class SearchResultCellTableViewCell: UITableViewCell {
     
     func changeSelectionCellColor (){
         let selectedView = UIView(frame: CGRect.zero)
-        selectedView.backgroundColor = UIColor(red: 20/255, green: 160/255, blue: 160/255, alpha: 0.5)
+        selectedView.backgroundColor = UIColor(red: 20/255, green: 160/255, blue: 161/255, alpha: 0.5)
         self.selectedBackgroundView = selectedView
     }
 
