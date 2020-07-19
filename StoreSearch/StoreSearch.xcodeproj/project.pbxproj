@@ -63,6 +63,7 @@
 			isa = PBXGroup;
 			children = (
 				AF1D4B5624C369F80010D945 /* Views */,
+				AF1D4B5524C369D60010D945 /* Cells */,
 				AF1D4B5424C369C70010D945 /* ViewControllers */,
 				AF1D4B5324C369BD0010D945 /* Model */,
 				AF1D4B3924C246B10010D945 /* AppDelegate.swift */,
@@ -85,7 +86,6 @@
 			isa = PBXGroup;
 			children = (
 				AF1D4B3B24C246B10010D945 /* SearchViewController.swift */,
-				AF1D4B5524C369D60010D945 /* Cells */,
 			);
 			path = ViewControllers;
 			sourceTree = "<group>";
@@ -94,6 +94,8 @@
 			isa = PBXGroup;
 			children = (
 				AF1D4B4F24C34D940010D945 /* SearchResultCellTableViewCell.swift */,
+				AF1D4B4D24C349EE0010D945 /* SearchResultCell.xib */,
+				AF1D4B5124C358010010D945 /* NothingFoundCell.xib */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -102,8 +104,6 @@
 			isa = PBXGroup;
 			children = (
 				AF1D4B3D24C246B10010D945 /* Main.storyboard */,
-				AF1D4B4D24C349EE0010D945 /* SearchResultCell.xib */,
-				AF1D4B5124C358010010D945 /* NothingFoundCell.xib */,
 			);
 			path = Views;
 			sourceTree = "<group>";

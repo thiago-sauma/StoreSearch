@@ -28,7 +28,6 @@ class SearchViewController: UIViewController {
             static let nothingFoundCell = "NothingFoundCell"
         }
     }
-    
 }
 
 //MARK:- TABLE VIEW METHODS
@@ -49,7 +48,7 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource{
         }else if self.searchResults.count == 0{
             return 1
         } else{
-            return self.searchResults.count
+            return self.searchResults.count 
         }
     }
     
@@ -59,10 +58,13 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource{
         }else{
             let cell = tableView.dequeueReusableCell(withIdentifier: TableView.CellIdentifiers.searchResultCell, for: indexPath) as! SearchResultCellTableViewCell
             cell.nameLabel.text = searchResults[indexPath.row].name
-            cell.artistNameLabel.text = searchResults[indexPath.row].artistName
+            if searchResults[indexPath.row].artist.isEmpty{
+                cell.artistNameLabel.text = "Unknown"
+            }else{
+                cell.artistNameLabel.text = "\(searchResults[indexPath.row].artist) (\(searchResults[indexPath.row].type))"
+            }
             return cell
         }
-      
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -92,19 +94,70 @@ extension SearchViewController: UISearchBarDelegate{
     }
 
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        searchBar.resignFirstResponder() //teclado se esconde ate se clicar no botao de Search novamente
-        self.searchResults = []
-        if searchBar.text! != "a"{
-            for i in 0...2{
-                let searchResult = SearchResult()
-                searchResult.name = String(format: "Fake result %d for", i)
-                searchResult.artistName = searchBar.text!
-                self.searchResults.append(searchResult)
-            }
+        if !searchBar.text!.isEmpty{ //isEmpty = ""
+            searchBar.resignFirstResponder() //teclado se esconde ate se clicar no botao de Search novamente
+            self.hasSearched = true
+            self.searchResults = []
+            
+            let url = iTunesURL(searchText: searchBar.text!)
+            guard let data = self.performStoreRequest(with: url) else {return} //retorna algo em bytes
+            self.searchResults = self.parse(data: data)
+           // self.searchResults.sort { $0.name.localizedStandardCompare($1.name) == .orderedAscending}
+            self.searchResults.sort {$0 < $1}
+            self.tableView.reloadData()
         }
-        self.hasSearched = true
-        self.tableView.reloadData()
+    }
+}
+
+//MARK:- NETWORKING METHODS
+extension SearchViewController{
+    
+//PASSO 1
+    func iTunesURL (searchText: String) -> URL {
+        let encodedText = searchText.addingPercentEncoding(withAllowedCharacters:CharacterSet.urlQueryAllowed)!
+        //codifica o texto para na ter problemas com caracteres especiais, como espacos etc.
+        let urlString = "https://itunes.apple.com/search?term=\(encodedText)"
+        let url = URL(string: urlString)
+        return url!
     }
     
+    //PASSO 2
+    func performStoreRequest(with url: URL) -> Data?{
+        do {
+           let data =  try Data(contentsOf: url)
+            print (data)
+            return data
+        } catch  {
+            print ("Download Error: \(error.localizedDescription)")
+            self.showNetworkError()
+            return nil
+        }
+    }
+    
+    //PASSO 3
+    func parse (data: Data) -> [SearchResult]{
 
+        do {
+            let decoder = JSONDecoder()
+            let result = try decoder.decode(ResultArray.self, from: data)
+            return result.results
+        } catch  {
+            print ("JSON Erro: \(error)")
+            return []
+        }
+    }
+    
+}
+
+
+  //MARK:- HELPER METHODS
+extension SearchViewController{
+   
+    func showNetworkError(){
+        let alert = UIAlertController(title: "Whooops...", message: "There was an error accessing Itunes Store", preferredStyle: .alert)
+        let action = UIAlertAction(title: "Ok", style: .default, handler: nil)
+        alert.addAction(action)
+        present(alert, animated: true, completion: nil)
+    }
+   
 }
