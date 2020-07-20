@@ -16,6 +16,7 @@
 		AF1D4B4E24C349EE0010D945 /* SearchResultCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = AF1D4B4D24C349EE0010D945 /* SearchResultCell.xib */; };
 		AF1D4B5024C34D940010D945 /* SearchResultCellTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF1D4B4F24C34D940010D945 /* SearchResultCellTableViewCell.swift */; };
 		AF1D4B5224C358010010D945 /* NothingFoundCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = AF1D4B5124C358010010D945 /* NothingFoundCell.xib */; };
+		AFC43AAD24C5B987007AC6C2 /* LoadingCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = AFC43AAC24C5B987007AC6C2 /* LoadingCell.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,7 @@
 		AF1D4B4D24C349EE0010D945 /* SearchResultCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SearchResultCell.xib; sourceTree = "<group>"; };
 		AF1D4B4F24C34D940010D945 /* SearchResultCellTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultCellTableViewCell.swift; sourceTree = "<group>"; };
 		AF1D4B5124C358010010D945 /* NothingFoundCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NothingFoundCell.xib; sourceTree = "<group>"; };
+		AFC43AAC24C5B987007AC6C2 /* LoadingCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = LoadingCell.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -96,6 +98,7 @@
 				AF1D4B4F24C34D940010D945 /* SearchResultCellTableViewCell.swift */,
 				AF1D4B4D24C349EE0010D945 /* SearchResultCell.xib */,
 				AF1D4B5124C358010010D945 /* NothingFoundCell.xib */,
+				AFC43AAC24C5B987007AC6C2 /* LoadingCell.xib */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -169,6 +172,7 @@
 			files = (
 				AF1D4B4424C246B10010D945 /* LaunchScreen.storyboard in Resources */,
 				AF1D4B4124C246B10010D945 /* Assets.xcassets in Resources */,
+				AFC43AAD24C5B987007AC6C2 /* LoadingCell.xib in Resources */,
 				AF1D4B4E24C349EE0010D945 /* SearchResultCell.xib in Resources */,
 				AF1D4B5224C358010010D945 /* NothingFoundCell.xib in Resources */,
 				AF1D4B3F24C246B10010D945 /* Main.storyboard in Resources */,
