@@ -12,15 +12,21 @@ class SearchViewController: UIViewController {
     
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var searchBar: UISearchBar!
+    @IBOutlet weak var segmentedControl: UISegmentedControl!
     
     var searchResults = [SearchResult]()
     var hasSearched = false
     var isLoading = false
+    var dataTask: URLSessionDataTask?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupSearchBar()
         self.setupTableview()
+    }
+    
+    @IBAction func segmentedChanged (_ sender: UISegmentedControl){
+        self.performSearchUrlSessionRequest()
     }
     
     struct TableView {
@@ -102,69 +108,81 @@ extension SearchViewController: UISearchBarDelegate{
     }
 
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        //self.dataMethodRequest(searchBar)
+        self.performSearchUrlSessionRequest()
+    }
+    
+    func performSearchUrlSessionRequest(){
         if !searchBar.text!.isEmpty{ //isEmpty = ""
             searchBar.resignFirstResponder() //teclado se esconde ate se clicar no botao de Search novamente
+            self.dataTask?.cancel() //se tem dataTask ativa, cancele-a para evitar um segundo request por cima do primeiro
             self.isLoading = true
             self.tableView.reloadData()
             self.hasSearched = true
             self.searchResults = []
-            //putting the request in a background thread
-            let url = iTunesURL(searchText: searchBar.text!) //elementos de interface tem q ficar fora de threads secundarias
-            DispatchQueue.global().async{
-                guard let data = self.performStoreRequest(with: url) else {return} //retorna algo em bytes
+            
+            let url = iTunesURL(searchText: searchBar.text!)
+            self.dataTask = URLSession.shared.dataTask(with: url, completionHandler: { (data, response, error) in
+                
+                if let error = error as NSError?,
+                        error.code != -999{
+                    DispatchQueue.main.async {
+                        self.hasSearched = false
+                        self.isLoading = false
+                        self.tableView.reloadData()
+                        self.showNetworkError()
+                    }
+                    return
+                }
+                
+                guard let httpResponse = response as? HTTPURLResponse,
+                    httpResponse.statusCode == 200 else {
+                        print("hhtResponse: \(String(describing: response))")
+                    return}
+                print (httpResponse)
+                
+                guard let data = data else {return}
                 self.searchResults = self.parse(data: data)
-                // self.searchResults.sort { $0.name.localizedStandardCompare($1.name) == .orderedAscending}
-                self.searchResults.sort {$0 < $1}
-                DispatchQueue.main.async { //mudancas na interface DEVEM acontecer na main thread
+                self.searchResults.sort(by: {$0<$1 })
+                DispatchQueue.main.async {
                     self.isLoading = false
                     self.tableView.reloadData()
                 }
-            }
+            })
+            self.dataTask?.resume()
             
         }
+        
     }
+
+    
+//    func dataMethodRequest(_ searchBar: UISearchBar){
+//        if !searchBar.text!.isEmpty{ //isEmpty = ""
+//            searchBar.resignFirstResponder() //teclado se esconde ate se clicar no botao de Search novamente
+//            self.isLoading = true
+//            self.tableView.reloadData()
+//            self.hasSearched = true
+//            self.searchResults = []
+//            //putting the request in a background thread
+//            let url = iTunesURL(searchText: searchBar.text!) //elementos de interface tem q ficar fora de threads secundarias
+//            DispatchQueue.global().async{
+//                guard let data = self.performStoreRequest(with: url) else {return} //retorna algo em bytes
+//                self.searchResults = self.parse(data: data)
+//                // self.searchResults.sort { $0.name.localizedStandardCompare($1.name) == .orderedAscending}
+//                self.searchResults.sort {$0 < $1}
+//                DispatchQueue.main.async { //mudancas na interface DEVEM acontecer na main thread
+//                    self.isLoading = false
+//                    self.tableView.reloadData()
+//                }
+//            }
+//        }
+//
+//    }
+    
+
+    
+   
 }
-
-//MARK:- NETWORKING METHODS
-extension SearchViewController{
-    
-//PASSO 1
-    func iTunesURL (searchText: String) -> URL {
-        let encodedText = searchText.addingPercentEncoding(withAllowedCharacters:CharacterSet.urlQueryAllowed)!
-        //codifica o texto para na ter problemas com caracteres especiais, como espacos etc.
-        let urlString = "https://itunes.apple.com/search?term=\(encodedText)&limit=200"
-        let url = URL(string: urlString)
-        return url!
-    }
-    
-    //PASSO 2
-    func performStoreRequest(with url: URL) -> Data?{
-        do {
-           let data =  try Data(contentsOf: url)
-            print (data)
-            return data
-        } catch  {
-            print ("Download Error: \(error.localizedDescription)")
-            self.showNetworkError()
-            return nil
-        }
-    }
-    
-    //PASSO 3
-    func parse (data: Data) -> [SearchResult]{
-
-        do {
-            let decoder = JSONDecoder()
-            let result = try decoder.decode(ResultArray.self, from: data)
-            return result.results
-        } catch  {
-            print ("JSON Erro: \(error)")
-            return []
-        }
-    }
-    
-}
-
 
   //MARK:- HELPER METHODS
 extension SearchViewController{
@@ -177,3 +195,69 @@ extension SearchViewController{
     }
    
 }
+
+//MARK:- DATA REQUEST METHOD
+extension SearchViewController{
+    
+//    //PASSO 1
+//    func iTunesURL (searchText: String) -> URL {
+//        let encodedText = searchText.addingPercentEncoding(withAllowedCharacters:CharacterSet.urlQueryAllowed)!
+//        //codifica o texto para na ter problemas com caracteres especiais, como espacos etc.
+//        let urlString = "https://itunes.apple.com/search?term=\(encodedText)&limit=20"
+//        let url = URL(string: urlString)
+//        return url!
+//    }
+    
+    //PASSO 2
+    func performStoreRequest(with url: URL) -> Data?{
+        do {
+            let data =  try Data(contentsOf: url)
+            print (data)
+            return data
+        } catch  {
+            print ("Download Error: \(error.localizedDescription)")
+            self.showNetworkError()
+            return nil
+        }
+    }
+    
+    //PASSO 3
+    func parse (data: Data) -> [SearchResult]{
+        do {
+            let decoder = JSONDecoder()
+            let result = try decoder.decode(ResultArray.self, from: data)
+            return result.results
+        } catch  {
+            print ("JSON Erro: \(error)")
+            return []
+        }
+    }
+    
+  
+    
+}
+
+//MARK:- URLSESSION METHOD
+extension SearchViewController{
+        //PASSO 1
+    func iTunesURL (searchText: String) -> URL {
+        let kindFiltered: String
+        switch segmentedControl.selectedSegmentIndex {
+        case 1:
+            kindFiltered = "musicTrack"
+        case 2:
+            kindFiltered = "software"
+        case 3:
+            kindFiltered = "ebook"
+        default:
+            kindFiltered = ""
+        }
+            let encodedText = searchText.addingPercentEncoding(withAllowedCharacters:CharacterSet.urlQueryAllowed)!
+            //codifica o texto para na ter problemas com caracteres especiais, como espacos etc.
+            let urlString = "https://itunes.apple.com/search?term=\(encodedText)&limit=20&entity=\(kindFiltered)"
+            let url = URL(string: urlString)
+            return url!
+        }
+
+}
+

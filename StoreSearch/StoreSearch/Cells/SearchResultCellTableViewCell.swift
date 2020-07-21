@@ -14,6 +14,8 @@ class SearchResultCellTableViewCell: UITableViewCell {
     @IBOutlet weak var artistNameLabel: UILabel!
     @IBOutlet weak var artWorkImageView: UIImageView!
     
+    var downloadTask: URLSessionDownloadTask?
+    
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -31,8 +33,18 @@ class SearchResultCellTableViewCell: UITableViewCell {
         if (searchResult.artistName?.isEmpty)!{
             self.artistNameLabel.text = "Unknown"
         }else{
-            self.artistNameLabel.text = "\(searchResult.artistName) (\(searchResult.type))"
+            self.artistNameLabel.text = "\(String(describing: searchResult.artistName)) (\(searchResult.type))"
         }
+        self.artWorkImageView.image = UIImage(named: "Placeholder")
+        guard let smallUrl = URL(string: searchResult.imageSmall) else {return}
+        downloadTask = artWorkImageView.loadImage(url: smallUrl)
+    }
+    
+    override func prepareForReuse() {  //cancelar download pendente das imagens enquanto tableview eh scrolada para baixo, pois elas nao sao mais necessarias
+        super.prepareForReuse()
+        self.downloadTask?.cancel()
+        self.downloadTask = nil
+        print ("thi")
     }
     
     
